@@ -1,0 +1,23 @@
+name: Unzip project
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          unzip -o project.zip -d /tmp/x
+          cd /tmp/x
+          if [ "$(ls | wc -l)" -eq 1 ] && [ -d "$(ls)" ]; then cd "$(ls)"; fi
+          rm -rf .github
+          cp -a . "$GITHUB_WORKSPACE/"
+          cd "$GITHUB_WORKSPACE"
+          rm -f project.zip
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add -A
+          git add -f gradle/wrapper/gradle-wrapper.jar || true
+          git commit -m "Extract project zip"
+          git push
